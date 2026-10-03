@@ -1,0 +1,10 @@
+# syntax=docker/dockerfile:1
+
+# verify image: runs build checks + whiteout rule tests + HTTP smoke, then exits.
+FROM golang:1.23-bookworm
+WORKDIR /src
+COPY go.mod ./
+RUN go mod download
+COPY . .
+RUN chmod +x verify.sh
+CMD ["./verify.sh"]

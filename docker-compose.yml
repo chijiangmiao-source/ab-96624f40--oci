@@ -1,0 +1,34 @@
+# OCI 白化层审计服务
+#
+# app:    审计 API（POST /audits 提交层，GET /audits/{id} 读取冻结裁决）
+# verify: 先跑构建检查与白化规则测试，再提交含 opaque/重建路径的审计做
+#         HTTP 冒烟，最后以退出码结束（0=全部通过）
+#
+# 用法:
+#   HOST_PORT=9090 docker compose up --build --exit-code-from verify
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      PORT: "8080"
+    ports:
+      - "${HOST_PORT:-8080}:8080"
+    healthcheck:
+      test: ["CMD", "/layer-audit", "healthcheck"]
+      interval: 2s
+      timeout: 3s
+      retries: 15
+      start_period: 5s
+    restart: unless-stopped
+
+  verify:
+    build:
+      context: .
+      dockerfile: Dockerfile.verify
+    depends_on:
+      app:
+        condition: service_healthy
+    environment:
+      AUDIT_URL: http://app:8080
