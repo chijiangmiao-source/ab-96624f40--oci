@@ -1,0 +1,11 @@
+FROM python:3.11-slim
+
+ENV PYTHONUNBUFFERED=1 \
+    APP_ADDR=http://app:8080
+
+WORKDIR /app
+COPY app ./app
+COPY tests ./tests
+COPY scripts ./scripts
+
+CMD ["sh", "scripts/verify.sh"]
